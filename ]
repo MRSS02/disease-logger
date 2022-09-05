@@ -5,8 +5,6 @@ import { firstValueFrom } from 'rxjs';
 import { Cron } from '@nestjs/schedule';
 import { Parser } from 'json2csv';
 import fs from 'fs';
-import dotenv from 'dotenv';
-dotenv.config();
 
 @Injectable()
 export class RequestService {
@@ -19,6 +17,7 @@ export class RequestService {
  //@Cron('0 30 11 * * *')
  @Cron('2 * * * * *')
  async scheduledRequest(): Promise<any> {
+    
     this.logger.debug('Called when the current second is 2');
     const parser = new Parser();
     const usUrl = 'https://disease.sh/v3/covid-19/countries/usa';
@@ -26,15 +25,15 @@ export class RequestService {
     const csvUs = parser.parse(dataUS);
     const chinaUrl = 'https://disease.sh/v3/covid-19/countries/china';
     const dataChina = await this.requestService.getInfo(chinaUrl);
-    const csvChina = parser.parse(dataChina);
+    const csvChina = parser.parse(dataChina); 
     try {
-    fs.writeFile('../../files/china.csv', csvChina, async () => { 
+    fs.writeFile('../../files/china.csv', csvChina, () => { 
       this.logger.debug('china.csv created!');
-      await this.upload('./china.csv'); 
+      this.upload('./china.csv'); 
     })
-    fs.writeFile('../../files/us.csv', csvUs, async () => { 
+    fs.writeFile('../../files/us.csv', csvUs, () => { 
       this.logger.debug('us.csv created!');
-      await this.upload('./us.csv'); 
+      this.upload('./us.csv'); 
     })
     } catch (e) {
       throw e;
@@ -57,9 +56,7 @@ export class RequestService {
   async upload(filename: string): Promise<any> {
     const server = await this.httpService.get("https://api.gofile.io/getServer")
     .pipe(map(response => response.data.server));
-    const file = await fs.readFile(filename, { encoding: 'utf8' })
-    const response = await this.httpService.post(`https://${server}.gofile.io/uploadFile`, 
-                                           { file: file, token: process.env.GOFILE_TOKEN });
+    const response = this.httpService.post(`https://${server}.gofile.io/uploadFile`);
     return firstValueFrom(response);
 
   }
