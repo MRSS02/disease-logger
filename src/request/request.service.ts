@@ -56,7 +56,7 @@ export class RequestService {
   async upload(filename: string): Promise<any> {
     const server = await this.httpService.get("https://api.gofile.io/getServer")
     .pipe(map(response => response.data.server));
-    const file = await fs.readFile(filename, { encoding: 'utf8' })
+    const file = fs.readFileSync(filename, { encoding: 'utf8' })
     const response = await this.httpService.post(`https://${server}.gofile.io/uploadFile`, 
                                            { file: file, token: process.env.GOFILE_TOKEN });
     return firstValueFrom(response);
