@@ -5,8 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { Cron } from '@nestjs/schedule';
 import { Parser } from 'json2csv';
 import fs from 'fs';
-import dotenv from 'dotenv';
-dotenv.config();
+import 'dotenv/config';
 
 @Injectable()
 export class RequestService {

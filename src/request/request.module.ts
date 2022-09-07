@@ -5,7 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { RequestService } from './request.service';
 
 @Module({
-  imports: [HttpModule, ScheduleModule],
+  imports: [HttpModule, ScheduleModule.forRoot()],
   controllers: [RequestController],
   providers: [RequestService],
 })
