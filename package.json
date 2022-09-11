@@ -27,6 +27,7 @@
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/schedule": "^2.1.0",
     "@types/cron": "^2.0.0",
+    "dotenv": "^16.0.2",
     "json2csv": "^5.0.7",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

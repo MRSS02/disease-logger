@@ -11,7 +11,7 @@ import 'dotenv/config';
 export class RequestService {
 
   constructor(private readonly httpService: HttpService,
-              private readonly requestService: RequestService) {}
+             private readonly requestService: RequestService) {}
 
  private readonly logger = new Logger(RequestService.name);
   
@@ -27,13 +27,17 @@ export class RequestService {
     const dataChina = await this.requestService.getInfo(chinaUrl);
     const csvChina = parser.parse(dataChina);
     try {
-    fs.writeFile('../../files/china.csv', csvChina, async () => { 
+    const fileDir = '../../files';
+    if (!fs.existsSync(fileDir)){
+      fs.mkdirSync(fileDir, { recursive: true });
+    }
+    fs.writeFile(`${fileDir}/china.csv`, csvChina, async () => { 
       this.logger.debug('china.csv created!');
-      await this.upload('../../files/china.csv'); 
+      await this.upload(`${fileDir}/china.csv`); 
     })
-    fs.writeFile('../../files/us.csv', csvUs, async () => { 
+    fs.writeFile(`${fileDir}/us.csv`, csvUs, async () => { 
       this.logger.debug('us.csv created!');
-      await this.upload('../../files/us.csv'); 
+      await this.upload(`${fileDir}/us.csv`); 
     })
     } catch (e) {
       throw e;
@@ -57,8 +61,11 @@ export class RequestService {
     const server = await this.httpService.get("https://api.gofile.io/getServer")
     .pipe(map(response => response.data.server));
     const file = fs.readFileSync(filename, { encoding: 'utf8' })
+    const formData = new FormData();
+    formData.append('file,', file)
+    formData.append('token', process.env.GOFILE_TOKEN);
     const response = await this.httpService.post(`https://${server}.gofile.io/uploadFile`, 
-                                           { file: file, token: process.env.GOFILE_TOKEN });
+                                                 formData);
     return firstValueFrom(response);
 
   }
