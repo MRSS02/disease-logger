@@ -68,6 +68,7 @@ export class RequestService {
     const formData = new FormData();
     formData.append('file,', file);
     formData.append('token', process.env.GOFILE_TOKEN);
+    formData.append('folderId', process.env.GOFILE_FOLDERID);
     const response = await this.httpService.post(
       `https://${server}.gofile.io/uploadFile`,
       formData,
