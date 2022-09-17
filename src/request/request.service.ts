@@ -8,7 +8,9 @@ import { map } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 import { Cron } from '@nestjs/schedule';
 import { Parser } from 'json2csv';
-import fs from 'fs';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as FormData from 'form-data';
 import 'dotenv/config';
 
 @Injectable()
@@ -20,7 +22,7 @@ export class RequestService {
   //@Cron('0 30 11 * * *')
   @Cron('02 * * * * *')
   async scheduledRequest(): Promise<any> {
-    this.logger.debug('Called when the current second is 2');
+    this.logger.debug('Called when the current time is 23:30');
     const parser = new Parser();
     const usUrl = process.env.US_URL;
     const dataUS = await this.getInfo(usUrl);
@@ -29,7 +31,8 @@ export class RequestService {
     const dataChina = await this.getInfo(chinaUrl);
     const csvChina = parser.parse(dataChina);
     try {
-      const fileDir = '../../files';
+      const basePath = process.cwd();
+      const fileDir = path.join(basePath, 'files');
       const fileExists = fs.existsSync(fileDir);
       if (!fileExists) {
         fs.mkdirSync(fileDir, { recursive: true });
@@ -64,15 +67,17 @@ export class RequestService {
     const server = await this.httpService
       .get('https://api.gofile.io/getServer')
       .pipe(map((response) => response.data.server));
-    const file = fs.readFileSync(filename, { encoding: 'utf8' });
     const formData = new FormData();
-    formData.append('file,', file);
+    await formData.append('file,', fs.createReadStream(filename), filename);
     formData.append('token', process.env.GOFILE_TOKEN);
     formData.append('folderId', process.env.GOFILE_FOLDERID);
-    const response = await this.httpService.post(
+    const response = await formData.submit(
       `https://${server}.gofile.io/uploadFile`,
-      formData,
     );
-    return firstValueFrom(response);
+    // const response = await this.httpService.post(
+    //  `https://${server}.gofile.io/uploadFile`,
+    //  formData,
+    // );
+    return response;
   }
 }
