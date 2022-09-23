@@ -19,7 +19,7 @@ export class RequestService {
 
   private readonly logger = new Logger(RequestService.name);
 
-  //@Cron('0 30 11 * * *')
+  //@Cron('0 30 23 * * *')
   @Cron('02 * * * * *')
   async scheduledRequest(): Promise<any> {
     this.logger.debug('Called when the current time is 23:30');
@@ -70,7 +70,7 @@ export class RequestService {
     const formData = new FormData();
     await formData.append('file,', fs.createReadStream(filename), filename);
     formData.append('token', process.env.GOFILE_TOKEN);
-    formData.append('folderId', process.env.GOFILE_FOLDERID);
+    formData.append('folderId', process.env.GOFILE_FOLDER);
     const response = await formData.submit(
       `https://${server}.gofile.io/uploadFile`,
     );
