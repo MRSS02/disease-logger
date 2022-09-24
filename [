@@ -31,8 +31,6 @@ export class RequestService {
     const dataChina = await this.getInfo(chinaUrl);
     const csvChina = parser.parse(dataChina);
     try {
-      const findServer = await this.findServer();
-      const server = findServer.data.server;
       const basePath = process.cwd();
       const fileDir = path.join(basePath, 'files');
       const fileExists = fs.existsSync(fileDir);
@@ -41,11 +39,11 @@ export class RequestService {
       }
       fs.writeFile(`${fileDir}/china.csv`, csvChina, async () => {
         this.logger.debug('china.csv created!');
-        console.log(await this.upload(`${fileDir}/china.csv`, server));
+        console.log(await this.upload(`${fileDir}/china.csv`));
       });
       fs.writeFile(`${fileDir}/us.csv`, csvUs, async () => {
         this.logger.debug('us.csv created!');
-        await this.upload(`${fileDir}/us.csv`, server);
+        await this.upload(`${fileDir}/us.csv`);
       });
     } catch (e) {
       throw e;
@@ -65,34 +63,23 @@ export class RequestService {
     }
   }
 
-  async findServer(): Promise<any> {
-    try {
-      const server = await this.httpService
-        .get('https://api.gofile.io/getServer')
-        .pipe(map((response) => response.data));
-      return firstValueFrom(server);
-    } catch (e) {
-      throw new InternalServerErrorException(`${e}`);
-    }
-  }
+  async upload(filename: string): Promise<any> {
+    const server = await this.httpService
+      .get('https://api.gofile.io/getServer')
+      .pipe(map((response) => response.data.server));
+    const formData: FormData = new FormData();
+    const file: string = fs.readFileSync(filename, 'utf8');
+    console.log(server, file);
+    formData.append('file,', file, filename);
+    formData.append('token', process.env.GOFILE_TOKEN);
+    formData.append('folderId', process.env.GOFILE_FOLDER);
+    // const response = await formData.submit(
+    //  `https://${server}.gofile.io/uploadFile`,
+    // );
 
-  async upload(filename: string, server: string): Promise<any> {
-    try {
-      const formData: FormData = new FormData();
-      const file: string = fs.readFileSync(filename, 'utf8');
-      formData.append('file,', file, filename);
-      formData.append('token', process.env.GOFILE_TOKEN);
-      formData.append('folderId', process.env.GOFILE_FOLDER);
-      // const response = await formData.submit(
-      //  `https://${server}.gofile.io/uploadFile`,
-      // );
-      console.log(server);
-      const response = await this.httpService
-        .post(`https://${server}.gofile.io/uploadFile`, formData)
-        .pipe(map((response) => response.data));
-      return firstValueFrom(response);
-    } catch (e) {
-      throw new InternalServerErrorException(`${e}`);
-    }
+    const response = await this.httpService
+      .post(`https://${server}.gofile.io/uploadFile`, formData)
+      .pipe(map((response) => response.data));
+    return firstValueFrom(response);
   }
 }
