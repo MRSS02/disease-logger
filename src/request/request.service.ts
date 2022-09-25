@@ -46,7 +46,7 @@ export class RequestService {
       });
       fs.writeFile(`${fileDir}/us.csv`, csvUs, async () => {
         this.logger.debug('us.csv created!');
-        await this.upload(`${fileDir}/us.csv`, server);
+        console.log(await this.upload(`${fileDir}/us.csv`, server));
       });
     } catch (e) {
       throw e;
@@ -80,7 +80,7 @@ export class RequestService {
   async upload(filename: string, server: string): Promise<any> {
     try {
       const formData: FormData = new FormData();
-      const file: string = fs.readFileSync(filename, 'utf8');
+      const file: Buffer = fs.readFileSync(filename);
       formData.append('file,', file, filename);
       formData.append('token', process.env.GOFILE_TOKEN);
       formData.append('folderId', process.env.GOFILE_FOLDER);
