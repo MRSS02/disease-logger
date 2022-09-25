@@ -22,7 +22,8 @@ export class RequestService {
   //@Cron('0 30 23 * * *')
   @Cron('02 * * * * *')
   async scheduledRequest(): Promise<any> {
-    this.logger.debug('Called when the current time is 23:30');
+    // this.logger.debug('Called when the current time is 23:30');
+    this.logger.debug('Called when the current second is 2');
     const parser = new Parser();
     const usUrl = process.env.US_URL;
     const dataUS = await this.getInfo(usUrl);
@@ -61,7 +62,7 @@ export class RequestService {
       return firstValueFrom(response);
       // }
     } catch (e) {
-      throw new InternalServerErrorException(`${e}`);
+      throw new InternalServerErrorException(e);
     }
   }
 
@@ -72,7 +73,7 @@ export class RequestService {
         .pipe(map((response) => response.data));
       return firstValueFrom(server);
     } catch (e) {
-      throw new InternalServerErrorException(`${e}`);
+      throw new InternalServerErrorException(e);
     }
   }
 
@@ -88,11 +89,13 @@ export class RequestService {
       // );
       console.log(server);
       const response = await this.httpService
-        .post(`https://${server}.gofile.io/uploadFile`, formData)
+        .post(`https://${server}.gofile.io/uploadFile`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
         .pipe(map((response) => response.data));
       return firstValueFrom(response);
     } catch (e) {
-      throw new InternalServerErrorException(`${e}`);
+      throw new InternalServerErrorException(e);
     }
   }
 }
