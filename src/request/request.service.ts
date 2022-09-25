@@ -19,11 +19,11 @@ export class RequestService {
 
   private readonly logger = new Logger(RequestService.name);
 
-  //@Cron('0 30 23 * * *')
-  @Cron('02 * * * * *')
+  @Cron('0 30 23 * * *')
+  //@Cron('02 * * * * *')
   async scheduledRequest(): Promise<any> {
-    // this.logger.debug('Called when the current time is 23:30');
-    this.logger.debug('Called when the current second is 2');
+    this.logger.debug('Called when the current time is 23:30');
+    // this.logger.debug('Called when the current second is 2');
     const parser = new Parser();
     const usUrl = process.env.US_URL;
     const dataUS = await this.getInfo(usUrl);
@@ -80,14 +80,10 @@ export class RequestService {
   async upload(filename: string, server: string): Promise<any> {
     try {
       const formData: FormData = new FormData();
-      const file: Buffer = fs.readFileSync(filename);
-      formData.append('file,', file, filename);
+      const file: Buffer = await fs.promises.readFile(filename);
+      formData.append('file', file, filename);
       formData.append('token', process.env.GOFILE_TOKEN);
-      formData.append('folderId', process.env.GOFILE_FOLDER);
-      // const response = await formData.submit(
-      //  `https://${server}.gofile.io/uploadFile`,
-      // );
-      console.log(server);
+      formData.append('folderId', process.env.GOFILE_FOLDER_ID);
       const response = await this.httpService
         .post(`https://${server}.gofile.io/uploadFile`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
