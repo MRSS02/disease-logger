@@ -89,6 +89,7 @@ export class RequestService {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
         .pipe(map((response) => response.data));
+      await fs.promises.unlink(filename);
       return firstValueFrom(response);
     } catch (e) {
       throw new InternalServerErrorException(e);
